@@ -8,9 +8,23 @@ struct ContentView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Tasks")
-                .font(.title)
-                .fontWeight(.semibold)
+            HStack {
+                Text("Tasks")
+                    .font(.title)
+                    .fontWeight(.semibold)
+
+                Spacer()
+
+                Button {
+                    Task {
+                        await loadData()
+                    }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .buttonStyle(.plain)
+                .help("Refresh tasks")
+            }
             
             ScrollView {
                 VStack(spacing: 0) {
@@ -45,22 +59,26 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .onTapGesture {
-            NSApplication.shared.keyWindow?.makeFirstResponder(nil)
-        }
+//        .onTapGesture {
+//            NSApplication.shared.keyWindow?.makeFirstResponder(nil)
+//        }
         .task {
-            guard let token = ProcessInfo.processInfo.environment["NOTION_TOKEN"] else {
-                print("NOTION_TOKEN is missing")
-                return
-            }
-
-            tasks = await NotionService.shared.fetchTasks(token: token)
-            
-            let options = await NotionService.shared.fetchSelectOptions(token: token)
-
-            subjectOptions = options.subjects
-            priorityOptions = options.priorities
+            await loadData()
         }
+    }
+    
+    private func loadData() async {
+        guard let token = ProcessInfo.processInfo.environment["NOTION_TOKEN"] else {
+            print("NOTION_TOKEN is missing")
+            return
+        }
+
+        tasks = await NotionService.shared.fetchTasks(token: token)
+
+        let options = await NotionService.shared.fetchSelectOptions(token: token)
+
+        subjectOptions = options.subjects
+        priorityOptions = options.priorities
     }
     
     private func toggleCompleted(_ task: NotionTask) {

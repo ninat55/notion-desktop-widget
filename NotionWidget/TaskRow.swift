@@ -12,6 +12,7 @@ struct TaskRow: View {
     let onDueDateChanged: (Date?) -> Void
     
     @State private var editedName: String
+    @State private var isHoveringMetadata = false
     @FocusState private var isNameFocused: Bool
     
     init(
@@ -96,14 +97,13 @@ struct TaskRow: View {
             // Right side: due date + priority
             VStack(alignment: .trailing, spacing: 3) {
 
-                if let dueDate = task.dueDate {
-                    DateSelector(
-                        date: dueDate,
-                        onChange: { newDate in
-                            onDueDateChanged(newDate)
-                        }
-                    )
-                }
+                DateSelector(
+                    date: task.dueDate,
+                    isHovering: isHoveringMetadata,
+                    onChange: { newDate in
+                        onDueDateChanged(newDate)
+                    }
+                )
 
                 Menu {
                     ForEach(priorityOptions, id: \.self) { priority in
@@ -124,6 +124,7 @@ struct TaskRow: View {
                 }
                 .menuStyle(.borderlessButton)
             }
+            .onHover { isHoveringMetadata = $0 }
         }
         .padding(.vertical, 6)
     }
